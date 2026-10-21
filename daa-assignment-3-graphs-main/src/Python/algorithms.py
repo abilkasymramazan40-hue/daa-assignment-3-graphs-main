@@ -3,7 +3,6 @@ import sys
 sys.setrecursionlimit(200000)
 
 def dsu(request):
-    """DSU with path compression and union by size/rank; return states."""
     n = request["n"]
     operations = request["operations"]
 
@@ -43,15 +42,13 @@ def dsu(request):
 
     return {"states": states}
 def kruskal(request):
-    """Separate Kruskal implementation; return cost, edge_ids, components."""
     n = request["n"]
     edges = request["edges"]
 
     if n <= 0:
         return {"cost": 0, "edge_ids": [], "components": 0}
 
-    # Сортируем ребра по весу (элемент с индексом 2 в каждом ребре [u, v, w])
-    # Если веса равны, сохраняем исходный порядок по id
+
     indexed_edges = [(w, orig_id, u, v) for orig_id, (u, v, w) in enumerate(edges)]
     indexed_edges.sort(key=lambda x: (x[0], x[1]))
 
@@ -94,14 +91,12 @@ def kruskal(request):
 import heapq
 
 def prim(request):
-    """Separate Prim implementation; restart for every unvisited component."""
     n = request["n"]
     edges = request["edges"]
 
     if n <= 0:
         return {"cost": 0, "edge_ids": [], "components": 0}
 
-    # Строим список смежности: adj[u] = list of (v, weight, orig_id)
     adj = [[] for _ in range(n)]
     for orig_id, (u, v, w) in enumerate(edges):
         adj[u].append((v, w, orig_id))
@@ -116,7 +111,6 @@ def prim(request):
         if not visited[start]:
             components += 1
             visited[start] = True
-            # Куча (min-heap) для выбора ребра с наименьшим весом
             min_heap = []
             for v, w, orig_id in adj[start]:
                 heapq.heappush(min_heap, (w, orig_id, start, v))
@@ -137,7 +131,6 @@ def prim(request):
 
 
 def scc(request):
-    """Kosaraju with two DFS passes; return component and condensation."""
     n = request["n"]
     edges = request["edges"]
 
@@ -184,7 +177,6 @@ def scc(request):
             dfs2(u, comp_id)
             comp_id += 1
 
-    # Построение конденсации (связей между компонентами)
     cond_set = set()
     for u, v in edges:
         if 0 <= u < n and 0 <= v < n:
@@ -200,7 +192,6 @@ def scc(request):
 
 
 def topo(request):
-    """Three-state DFS and reverse finish order; return acyclic and order."""
     n = request["n"]
     edges = request["edges"]
 
@@ -212,7 +203,6 @@ def topo(request):
         if 0 <= u < n and 0 <= v < n:
             adj[u].append(v)
 
-    # Состояния для DFS: 0 - не посещен, 1 - в процессе обхода (visited), 2 - полностью обработан
     state = [0] * n
     order = []
     is_acyclic = True
@@ -237,14 +227,12 @@ def topo(request):
             if not is_acyclic:
                 return {"acyclic": False, "order": []}
 
-    # Разворачиваем порядок, так как добавляли вершины по мере завершения
     order.reverse()
     return {"acyclic": True, "order": order}
 
 
 
 def dag(request):
-    """Whole-graph cycle check and DAG relaxation; add your own route helper."""
     n = request["n"]
     source = request["source"]
     edges = request["edges"]
@@ -257,7 +245,6 @@ def dag(request):
         if 0 <= u < n and 0 <= v < n:
             adj[u].append((v, w, orig_id))
 
-    # 1. Проверяем на циклы через топологическую сортировку
     state = [0] * n
     order = []
     is_acyclic = True
@@ -284,7 +271,6 @@ def dag(request):
 
     order.reverse()
 
-    # 2. Релаксация ребер в топологическом порядке
     distance = [None] * n
     parent_edge = [-1] * n
 
@@ -302,7 +288,6 @@ def dag(request):
     return {"acyclic": True, "distance": distance, "parent_edge": parent_edge}
 
 
-# Вспомогательная функция для восстановления маршрута (требуется по условию)
 def reconstruct_route(source, target, parent_edge, edges):
     """Route-reconstruction helper."""
     if source == target:
@@ -313,7 +298,7 @@ def reconstruct_route(source, target, parent_edge, edges):
     while curr != source:
         p_edge = parent_edge[curr]
         if p_edge == -1:
-            return [] # Пути нет
+            return [] 
         u, v, w = edges[p_edge]
         path.append(u)
         curr = u
